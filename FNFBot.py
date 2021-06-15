@@ -3,10 +3,10 @@ import ctypes
 import time
 import threading
 
-leftPos = (770,160)
-downPos = (895, 160)
-upPos = (1000,160)
-rightPos = (1130,160)
+leftPos = (770,120)
+downPos = (895, 120)
+upPos = (1000,120)
+rightPos = (1130,120)
 
 leftHoldPos = (787,186)
 downHoldPos = (894,193)
@@ -18,10 +18,18 @@ downCol = (0,255,255)
 upCol = (18,250,5)
 rightCol = (249,57,63)
 
-leftHoldCol = (141,64,117)
-downHoldCol = (25,172,179)
-upHoldCol = (30,165,23)
-rightHoldCol = (174,53,63)
+leftColS = (226,118,255)
+downColS = (61,202,255)
+upColS = (133,227,0)
+rightColS = (255,136,78)
+
+upPressed = False
+downPressed = False
+rightPressed = False
+leftPressed = False
+
+average = 0
+totalTime = 0
 
 SendInput = ctypes.windll.user32.SendInput
 
@@ -83,37 +91,65 @@ def ReleaseRight():
 
 
 while True:
+    time1 = time.time()
     try:
         #left arrow
-        if p.pixelMatchesColor(leftPos[0],leftPos[1],leftCol):
+        leftPixel = p.pixel(leftPos[0],leftPos[1])
+        if leftPixel == leftCol or leftPixel == leftColS:
             PressKey(30)
-        else:
-            leftPixel = p.pixel(leftHoldPos[0],leftHoldPos[1])
-            if leftPixel[0] < 150 and leftPixel[2] < 150:
-                leftDelay = threading.Timer(.2,ReleaseLeft)
-                leftDelay.start()
+            leftPressed = True
+        elif leftPressed == True:
+            leftPixelHold = p.pixel(leftHoldPos[0],leftHoldPos[1])
+            if (leftPixelHold[0] < 150 and leftPixelHold[2] < 150) or leftPixelHold == leftCol or leftPixelHold == leftColS:
+                #leftDelay = threading.Timer(.05,ReleaseLeft)
+                #leftDelay.start()
+                ReleaseKey(30)
+                leftPressed = False
 
         #down arrow
-        if p.pixelMatchesColor(downPos[0],downPos[1],downCol):
+        downPixel = p.pixel(downPos[0],downPos[1])
+        if downPixel == downCol or downPixel == downColS:
             PressKey(31)
-        elif p.pixel(downHoldPos[0],downHoldPos[1])[2] < 150:
-            downDelay = threading.Timer(.2,ReleaseDown)
-            downDelay.start()
+            downPressed = True
+        elif downPressed == True:
+            downPixelHold = p.pixel(downHoldPos[0],downHoldPos[1])
+            if downPixelHold[2] < 150 or downPixelHold == downCol or downPixelHold == downColS:
+                #downDelay = threading.Timer(.05,ReleaseDown)
+                #downDelay.start()
+                ReleaseKey(31)
+                downPressed = False
 
         #up arrow
-        if p.pixelMatchesColor(upPos[0],upPos[1],upCol):
+        upPixel = p.pixel(upPos[0],upPos[1])
+        if upPixel == upCol or upPixel == upColS:
             PressKey(17)
-        elif p.pixel(upHoldPos[0],upHoldPos[1])[1] < 150:
-            upDelay = threading.Timer(.2,ReleaseUp)
-            upDelay.start()
+            upPressed = True
+        elif upPressed == True:
+            upPixelHold = p.pixel(upHoldPos[0],upHoldPos[1])
+            if upPixelHold[1] < 150 or upPixelHold == upPixel or upPixelHold == upColS:
+                #upDelay = threading.Timer(.05,ReleaseUp)
+                #upDelay.start()
+                ReleaseKey(17)
+                upPressed = False
 
         #right arrow
-        if p.pixelMatchesColor(rightPos[0],rightPos[1],rightCol):
-            PressKey(32)                   
-        elif p.pixel(rightHoldPos[0],rightHoldPos[1])[0] < 150:
-            rightDelay = threading.Timer(.2,ReleaseRight)
-            rightDelay.start()
+        rightPixel = p.pixel(rightPos[0],rightPos[1])
+        if rightPixel == rightCol or rightPixel == rightColS:
+            PressKey(32)
+            rightPressed = True
+        elif rightPressed == True:
+            rightPixelHold = p.pixel(rightHoldPos[0],rightHoldPos[1])
+            if rightPixelHold[0] < 150 or rightPixelHold == rightCol or rightPixelHold == rightColS:
+                #rightDelay = threading.Timer(.05,ReleaseRight)
+                #rightDelay.start()
+                ReleaseKey(32)
+                rightPressed = False
 
 
     except OSError:
         print("OS Error")
+        
+    average += 1
+    totalTime += time.time() - time1
+    print("Average loops per second: " + str(1/(totalTime/average)))
+
